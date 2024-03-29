@@ -2,7 +2,11 @@
 
 This is a GUI application for a bank to manage fund transfers between accounts. It allows users to transfer funds from one account to another, provided certain conditions are met.
 
+<<<<<<< HEAD
 
+=======
+9
+>>>>>>> origin/main
 ## Features
 
 - Creates an `Accounts` table in the database and populates it with data from `Accounts.txt` file at startup.
