@@ -1,11 +1,15 @@
 package org.example.bankfundtransfer;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -36,7 +40,28 @@ public class BankFundTransfer extends Application {
         accountsTextArea.setEditable(false);
         accountsTextArea.setPrefHeight(200);
 
-        Scene scene = new Scene(null, 320, 240);
+
+        GridPane grid = new GridPane();
+        grid.setMinSize(200, 180);
+        grid.setVgap(10);
+        grid.setHgap(10);
+        grid.setPadding(new Insets(10));
+        grid.setAlignment(Pos.CENTER);
+
+        grid.add(sourceAccountLabel, 0, 0);
+        grid.add(sourceAccountField, 1, 0);
+        grid.add(amountLabel, 0, 1);
+        grid.add(amountField, 1, 1);
+        grid.add(targetAccountLabel, 0, 2);
+        grid.add(targetAccountField, 1, 2);
+
+        HBox buttonBox = new HBox(10);
+        buttonBox.getChildren().addAll(submitBtn, showAccountsBtn);
+        buttonBox.setAlignment(Pos.CENTER);
+        grid.add(buttonBox, 0, 3, 2, 1);
+        grid.add(accountsTextArea, 0, 4, 2, 1);
+
+        Scene scene = new Scene(grid, 400, 400);
         stage.setTitle("Bank Fund Transfer Application");
         stage.setScene(scene);
         stage.show();
