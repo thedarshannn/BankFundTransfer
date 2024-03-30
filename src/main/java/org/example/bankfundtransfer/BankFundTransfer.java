@@ -64,18 +64,18 @@ public class BankFundTransfer extends Application {
         try {
             dbConnectivity.DBConnection();
             dbConnectivity.createTable();
-            dbConnectivity.insertDataThroughFile("accounts.txt");}
-        catch (SQLException e) {
+            dbConnectivity.insertDataThroughFile("accounts.txt");
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 
         // Transfer funds from source account to target account
         submitBtn.setOnAction(e -> {
-            try{
+            try {
                 int sourceAccount = Integer.parseInt(sourceAccountField.getText());
                 double amount = Double.parseDouble(amountField.getText());
                 int targetAccount = Integer.parseInt(targetAccountField.getText());
-                
+
 
                 if (sourceAccount <= 0 || targetAccount <= 0 || amount <= 0) {
                     Alert alert = new Alert(Alert.AlertType.ERROR, "Invalid input. Please enter positive numbers.");
@@ -83,7 +83,7 @@ public class BankFundTransfer extends Application {
                 } else {
                     dbConnectivity.transferFunds(sourceAccount, amount, targetAccount);
                 }
-            }catch (NumberFormatException ex){
+            } catch (NumberFormatException ex) {
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Invalid input.");
                 alert.show();
             }

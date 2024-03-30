@@ -8,7 +8,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.*;
-public class DBConnectivity implements AutoCloseable{
+
+public class DBConnectivity implements AutoCloseable {
 
     private Connection con;
 
@@ -30,12 +31,12 @@ public class DBConnectivity implements AutoCloseable{
         }
 
         // Establish the connection
-        try{
+        try {
             con = DriverManager.getConnection(url, username, pass);
             Alert alert = new Alert(Alert.AlertType.INFORMATION, "Connection established.");
             alert.show();
 
-        }catch (SQLException e){
+        } catch (SQLException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Error establishing connection.");
             alert.show();
         }
@@ -68,21 +69,21 @@ public class DBConnectivity implements AutoCloseable{
         }
     }
 
-    public void insertDataThroughFile(String fileName) throws SQLException, IOException{
+    public void insertDataThroughFile(String fileName) throws SQLException, IOException {
         String queryString = "INSERT INTO Accounts (AccountNumber, Name, LastName, Balance, IsLocked) VALUES (?, ?, ?, ?, ?)";
         String queryCheck = "SELECT COUNT(*) FROM Accounts WHERE AccountNumber = ?";
 
-        try(PreparedStatement prepStmt = con.prepareStatement(queryString);
-            PreparedStatement checkStmt = con.prepareStatement(queryCheck)) {
-            try(BufferedReader in = new BufferedReader(new FileReader(fileName))) {
+        try (PreparedStatement prepStmt = con.prepareStatement(queryString);
+             PreparedStatement checkStmt = con.prepareStatement(queryCheck)) {
+            try (BufferedReader in = new BufferedReader(new FileReader(fileName))) {
                 String line = "";
-                while((line = in.readLine()) != null){
+                while ((line = in.readLine()) != null) {
                     String[] data = line.split("\\s+");
                     int accountNumber = Integer.parseInt(data[0]);
                     checkStmt.setInt(1, accountNumber);
                     ResultSet checkResult = checkStmt.executeQuery();
                     checkResult.next();
-                    if(checkResult.getInt(1) == 0) {
+                    if (checkResult.getInt(1) == 0) {
                         prepStmt.setInt(1, accountNumber);
                         prepStmt.setString(2, data[1]);
                         prepStmt.setString(3, data[2]);
@@ -96,15 +97,15 @@ public class DBConnectivity implements AutoCloseable{
     }
 
     // Transfer funds from source account to target account
-    public void transferFunds(int sourceAcc, double amount, int targetAcc){
+    public void transferFunds(int sourceAcc, double amount, int targetAcc) {
 
-        try{
+        try {
 
             // Start a transaction
             con.setAutoCommit(false);
 
             // Check if source accounts are not locked
-            PreparedStatement lockCheckStmt  = con.prepareStatement("SELECT IsLocked FROM Accounts WHERE AccountNumber = ?");
+            PreparedStatement lockCheckStmt = con.prepareStatement("SELECT IsLocked FROM Accounts WHERE AccountNumber = ?");
             lockCheckStmt.setInt(1, sourceAcc);
             ResultSet lockCheckResult = lockCheckStmt.executeQuery();
             lockCheckResult.next();
@@ -117,11 +118,11 @@ public class DBConnectivity implements AutoCloseable{
             String targetLockStatus = lockCheckResult.getString("IsLocked");
 
             // If either account is locked, rollback the transaction
-            if ("yes".equalsIgnoreCase(sourceLockStatus) || "yes".equalsIgnoreCase(targetLockStatus)){
+            if ("yes".equalsIgnoreCase(sourceLockStatus) || "yes".equalsIgnoreCase(targetLockStatus)) {
                 Alert alert = new Alert(Alert.AlertType.ERROR, "One or both accounts are locked.");
                 alert.show();
                 con.rollback();
-            }else{
+            } else {
                 // Check if there are sufficient funds in the source account
                 PreparedStatement balanceCheckStmt = con.prepareStatement("SELECT Balance FROM Accounts WHERE AccountNumber = ?");
                 balanceCheckStmt.setInt(1, sourceAcc);
@@ -129,36 +130,36 @@ public class DBConnectivity implements AutoCloseable{
                 balanceCheckResult.next();
                 double sourceBalance = balanceCheckResult.getDouble("Balance");
 
-                if(sourceBalance < amount){
-                        Alert alert = new Alert(Alert.AlertType.ERROR, "Insufficient funds in the source account.");
-                        alert.show();
-                        con.rollback();
-                }else {
-                        // Update balances in both accounts
-                        PreparedStatement updateSourceStmt = con.prepareStatement("UPDATE Accounts SET Balance = Balance - ? WHERE AccountNumber = ?");
-                        updateSourceStmt.setDouble(1, amount);
-                        updateSourceStmt.setInt(2, sourceAcc);
-                        updateSourceStmt.executeUpdate();
+                if (sourceBalance < amount) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Insufficient funds in the source account.");
+                    alert.show();
+                    con.rollback();
+                } else {
+                    // Update balances in both accounts
+                    PreparedStatement updateSourceStmt = con.prepareStatement("UPDATE Accounts SET Balance = Balance - ? WHERE AccountNumber = ?");
+                    updateSourceStmt.setDouble(1, amount);
+                    updateSourceStmt.setInt(2, sourceAcc);
+                    updateSourceStmt.executeUpdate();
 
-                        PreparedStatement updateTargetStmt = con.prepareStatement("UPDATE Accounts SET Balance = Balance + ? WHERE AccountNumber = ?");
-                        updateTargetStmt.setDouble(1, amount);
-                        updateTargetStmt.setInt(2, targetAcc);
-                        updateTargetStmt.executeUpdate();
+                    PreparedStatement updateTargetStmt = con.prepareStatement("UPDATE Accounts SET Balance = Balance + ? WHERE AccountNumber = ?");
+                    updateTargetStmt.setDouble(1, amount);
+                    updateTargetStmt.setInt(2, targetAcc);
+                    updateTargetStmt.executeUpdate();
 
-                        con.commit();
-                        con.setAutoCommit(true);
+                    con.commit();
+                    con.setAutoCommit(true);
 
-                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,"Transfer completed successfully.");
-                        alert.show();
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "Transfer completed successfully.");
+                    alert.show();
                 }
             }
-        }catch (NumberFormatException | SQLException e){
+        } catch (NumberFormatException | SQLException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "Invalid input or database error occurred.");
             alert.show();
         }
     }
 
-    public void showAccounts(TextArea accountsTextArea){
+    public void showAccounts(TextArea accountsTextArea) {
         try {
             // Create a StringBuilder to store the accounts information
             StringBuilder accountsInfo = new StringBuilder();
