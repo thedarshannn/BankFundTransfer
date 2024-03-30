@@ -146,6 +146,8 @@ public class DBConnectivity implements AutoCloseable{
                         updateTargetStmt.executeUpdate();
 
                         con.commit();
+                        con.setAutoCommit(true);
+
                         Alert alert = new Alert(Alert.AlertType.CONFIRMATION,"Transfer completed successfully.");
                         alert.show();
                 }
