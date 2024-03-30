@@ -17,6 +17,7 @@ public class BankFundTransfer extends Application {
     private TextField amountField;
     private TextField targetAccountField;
     private TextArea accountsTextArea;
+    private DBConnectivity dbConnectivity = new DBConnectivity();
 
     @Override
     public void start(Stage stage) throws IOException {
@@ -57,6 +58,16 @@ public class BankFundTransfer extends Application {
         buttonBox.setAlignment(Pos.CENTER);
         grid.add(buttonBox, 0, 3, 2, 1);
         grid.add(accountsTextArea, 0, 4, 2, 1);
+
+        // Create a new DB connection and create a table, and insert data from a file
+        try {
+            dbConnectivity.DBConnection();
+            dbConnectivity.createTable();
+            dbConnectivity.insertDataThroughFile("accounts.txt");
+        } catch (Exception e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Error establishing connection.");
+            alert.show();
+        }
 
         Scene scene = new Scene(grid, 400, 400);
         stage.setTitle("Bank Fund Transfer Application");

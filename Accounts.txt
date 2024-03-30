@@ -1,0 +1,7 @@
+1001 Isaac  Newton      2000    yes
+1002 Blaise Pascal      1500    yes
+1003 Marie  Curie       3000    no
+1004 Albert Einstein    1500    no
+1009 Dmitri Mendeleev   2000    yes
+1010 Carl   Gauss	    4000    no
+1011 Adam   Smith       5000    no
