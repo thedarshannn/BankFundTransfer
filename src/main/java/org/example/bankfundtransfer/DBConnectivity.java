@@ -1,6 +1,7 @@
 package org.example.bankfundtransfer;
 
 import javafx.scene.control.Alert;
+import oracle.jdbc.proxy.annotation.Pre;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -81,6 +82,67 @@ public class DBConnectivity implements AutoCloseable{
                     prepStmt.executeUpdate();
                 }
             }
+        }
+    }
+
+    // Transfer funds from source account to target account
+    public void transferFunds(int sourceAcc, double amount, int targetAcc){
+
+        try{
+
+            // Start a transaction
+            con.setAutoCommit(false);
+
+            // Check if source accounts are not locked
+            PreparedStatement lockCheckStmt  = con.prepareStatement("SELECT IsLocked FROM Accounts WHERE AccountNumber = ?");
+            lockCheckStmt.setInt(1, sourceAcc);
+            ResultSet lockCheckResult = lockCheckStmt.executeQuery();
+            lockCheckResult.next();
+            String sourceLockStatus = lockCheckResult.getString("IsLocked");
+
+            // Check if target accounts are not locked
+            lockCheckStmt.setInt(1, targetAcc);
+            lockCheckResult = lockCheckStmt.executeQuery();
+            lockCheckResult.next();
+            String targetLockStatus = lockCheckResult.getString("IsLocked");
+
+            // If either account is locked, rollback the transaction
+            if ("yes".equalsIgnoreCase(sourceLockStatus) || "yes".equalsIgnoreCase(targetLockStatus)){
+                Alert alert = new Alert(Alert.AlertType.ERROR, "One or both accounts are locked.");
+                alert.show();
+                con.rollback();
+            }else{
+                // Check if there are sufficient funds in the source account
+                PreparedStatement balanceCheckStmt = con.prepareStatement("SELECT Balance FROM Accounts WHERE AccountNumber = ?");
+                balanceCheckStmt.setInt(1, sourceAcc);
+                ResultSet balanceCheckResult = balanceCheckStmt.executeQuery();
+                balanceCheckResult.next();
+                double sourceBalance = balanceCheckResult.getDouble("Balance");
+
+                if(sourceBalance < amount){
+                        Alert alert = new Alert(Alert.AlertType.ERROR, "Insufficient funds in the source account.");
+                        alert.show();
+                        con.rollback();
+                }else {
+                        // Update balances in both accounts
+                        PreparedStatement updateSourceStmt = con.prepareStatement("UPDATE Accounts SET Balance = Balance - ? WHERE AccountNumber = ?");
+                        updateSourceStmt.setDouble(1, amount);
+                        updateSourceStmt.setInt(2, sourceAcc);
+                        updateSourceStmt.executeUpdate();
+
+                        PreparedStatement updateTargetStmt = con.prepareStatement("UPDATE Accounts SET Balance = Balance + ? WHERE AccountNumber = ?");
+                        updateTargetStmt.setDouble(1, amount);
+                        updateTargetStmt.setInt(2, targetAcc);
+                        updateTargetStmt.executeUpdate();
+
+                        con.commit();
+                        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,"Transfer completed successfully.");
+                        alert.show();
+                }
+            }
+        }catch (NumberFormatException | SQLException e){
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Invalid input or database error occurred.");
+            alert.show();
         }
     }
 

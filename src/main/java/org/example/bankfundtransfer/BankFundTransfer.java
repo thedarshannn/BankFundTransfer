@@ -10,6 +10,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 public class BankFundTransfer extends Application {
 
@@ -20,7 +21,7 @@ public class BankFundTransfer extends Application {
     private DBConnectivity dbConnectivity = new DBConnectivity();
 
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stage) throws IOException, SQLException {
 
         Label sourceAccountLabel = new Label("Source Account: ");
         sourceAccountField = new TextField();
@@ -60,14 +61,17 @@ public class BankFundTransfer extends Application {
         grid.add(accountsTextArea, 0, 4, 2, 1);
 
         // Create a new DB connection and create a table, and insert data from a file
-        try {
             dbConnectivity.DBConnection();
             dbConnectivity.createTable();
             dbConnectivity.insertDataThroughFile("accounts.txt");
-        } catch (Exception e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR, "Error establishing connection.");
-            alert.show();
-        }
+
+        // Transfer funds from source account to target account
+        submitBtn.setOnAction(e -> {
+            int sourceAccount = Integer.parseInt(sourceAccountField.getText());
+            double amount = Double.parseDouble(amountField.getText());
+            int targetAccount = Integer.parseInt(targetAccountField.getText());
+            dbConnectivity.transferFunds(sourceAccount, amount, targetAccount);
+        });
 
         Scene scene = new Scene(grid, 400, 400);
         stage.setTitle("Bank Fund Transfer Application");
