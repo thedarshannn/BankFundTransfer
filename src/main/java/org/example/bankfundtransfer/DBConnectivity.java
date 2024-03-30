@@ -1,6 +1,7 @@
 package org.example.bankfundtransfer;
 
 import javafx.scene.control.Alert;
+import javafx.scene.control.TextArea;
 import oracle.jdbc.proxy.annotation.Pre;
 
 import java.io.BufferedReader;
@@ -142,6 +143,38 @@ public class DBConnectivity implements AutoCloseable{
             }
         }catch (NumberFormatException | SQLException e){
             Alert alert = new Alert(Alert.AlertType.ERROR, "Invalid input or database error occurred.");
+            alert.show();
+        }
+    }
+
+    public void showAccounts(TextArea accountsTextArea){
+        try {
+            // Create a StringBuilder to store the accounts information
+            StringBuilder accountsInfo = new StringBuilder();
+
+            // Prepare and execute the SQL query to select all rows from the Accounts table
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM Accounts");
+            ResultSet resultSet = statement.executeQuery();
+
+            // Iterate through the result set and append each row to the StringBuilder
+            while (resultSet.next()) {
+                int accountNumber = resultSet.getInt("AccountNumber");
+                String name = resultSet.getString("Name");
+                String lastName = resultSet.getString("LastName");
+                double balance = resultSet.getDouble("Balance");
+                String isLocked = resultSet.getString("IsLocked");
+
+                accountsInfo.append("Account Number: ").append(accountNumber).append("\n")
+                        .append("Name: ").append(name).append("\n")
+                        .append("Last Name: ").append(lastName).append("\n")
+                        .append("Balance: ").append(balance).append("\n")
+                        .append("Is Locked: ").append(isLocked).append("\n\n");
+            }
+
+            // Set the accounts information to the TextArea
+            accountsTextArea.setText(accountsInfo.toString());
+        } catch (SQLException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Error retrieving accounts information.");
             alert.show();
         }
     }

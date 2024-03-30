@@ -21,7 +21,7 @@ public class BankFundTransfer extends Application {
     private DBConnectivity dbConnectivity = new DBConnectivity();
 
     @Override
-    public void start(Stage stage) throws IOException, SQLException {
+    public void start(Stage stage) throws IOException {
 
         Label sourceAccountLabel = new Label("Source Account: ");
         sourceAccountField = new TextField();
@@ -61,16 +61,30 @@ public class BankFundTransfer extends Application {
         grid.add(accountsTextArea, 0, 4, 2, 1);
 
         // Create a new DB connection and create a table, and insert data from a file
+        try {
             dbConnectivity.DBConnection();
             dbConnectivity.createTable();
-            dbConnectivity.insertDataThroughFile("accounts.txt");
+            dbConnectivity.insertDataThroughFile("accounts.txt");}
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
 
         // Transfer funds from source account to target account
         submitBtn.setOnAction(e -> {
-            int sourceAccount = Integer.parseInt(sourceAccountField.getText());
-            double amount = Double.parseDouble(amountField.getText());
-            int targetAccount = Integer.parseInt(targetAccountField.getText());
-            dbConnectivity.transferFunds(sourceAccount, amount, targetAccount);
+            try{
+                int sourceAccount = Integer.parseInt(sourceAccountField.getText());
+                double amount = Double.parseDouble(amountField.getText());
+                int targetAccount = Integer.parseInt(targetAccountField.getText());
+                dbConnectivity.transferFunds(sourceAccount, amount, targetAccount);
+            }catch (NumberFormatException ex){
+                Alert alert = new Alert(Alert.AlertType.ERROR, "Invalid input.");
+                alert.show();
+            }
+        });
+
+        // Show all accounts
+        showAccountsBtn.setOnAction(e -> {
+            dbConnectivity.showAccounts(accountsTextArea);
         });
 
         Scene scene = new Scene(grid, 400, 400);
