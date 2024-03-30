@@ -70,17 +70,26 @@ public class DBConnectivity implements AutoCloseable{
 
     public void insertDataThroughFile(String fileName) throws SQLException, IOException{
         String queryString = "INSERT INTO Accounts (AccountNumber, Name, LastName, Balance, IsLocked) VALUES (?, ?, ?, ?, ?)";
-        try(PreparedStatement prepStmt = con.prepareStatement(queryString)) {
-            try(BufferedReader in = new BufferedReader(new FileReader(fileName))){
+        String queryCheck = "SELECT COUNT(*) FROM Accounts WHERE AccountNumber = ?";
+
+        try(PreparedStatement prepStmt = con.prepareStatement(queryString);
+            PreparedStatement checkStmt = con.prepareStatement(queryCheck)) {
+            try(BufferedReader in = new BufferedReader(new FileReader(fileName))) {
                 String line = "";
                 while((line = in.readLine()) != null){
                     String[] data = line.split("\\s+");
-                    prepStmt.setInt(1, Integer.parseInt(data[0]));
-                    prepStmt.setString(2, data[1]);
-                    prepStmt.setString(3, data[2]);
-                    prepStmt.setDouble(4, Double.parseDouble(data[3]));
-                    prepStmt.setString(5, data[4]);
-                    prepStmt.executeUpdate();
+                    int accountNumber = Integer.parseInt(data[0]);
+                    checkStmt.setInt(1, accountNumber);
+                    ResultSet checkResult = checkStmt.executeQuery();
+                    checkResult.next();
+                    if(checkResult.getInt(1) == 0) {
+                        prepStmt.setInt(1, accountNumber);
+                        prepStmt.setString(2, data[1]);
+                        prepStmt.setString(3, data[2]);
+                        prepStmt.setDouble(4, Double.parseDouble(data[3]));
+                        prepStmt.setString(5, data[4]);
+                        prepStmt.executeUpdate();
+                    }
                 }
             }
         }
