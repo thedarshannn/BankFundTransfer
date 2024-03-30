@@ -2,8 +2,6 @@ package org.example.bankfundtransfer;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextArea;
-import oracle.jdbc.proxy.annotation.Pre;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
