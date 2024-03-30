@@ -75,7 +75,14 @@ public class BankFundTransfer extends Application {
                 int sourceAccount = Integer.parseInt(sourceAccountField.getText());
                 double amount = Double.parseDouble(amountField.getText());
                 int targetAccount = Integer.parseInt(targetAccountField.getText());
-                dbConnectivity.transferFunds(sourceAccount, amount, targetAccount);
+                
+
+                if (sourceAccount <= 0 || targetAccount <= 0 || amount <= 0) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR, "Invalid input. Please enter positive numbers.");
+                    alert.show();
+                } else {
+                    dbConnectivity.transferFunds(sourceAccount, amount, targetAccount);
+                }
             }catch (NumberFormatException ex){
                 Alert alert = new Alert(Alert.AlertType.ERROR, "Invalid input.");
                 alert.show();
@@ -85,6 +92,17 @@ public class BankFundTransfer extends Application {
         // Show all accounts
         showAccountsBtn.setOnAction(e -> {
             dbConnectivity.showAccounts(accountsTextArea);
+        });
+
+        //close the connection
+        stage.setOnCloseRequest(e -> {
+            try {
+                dbConnectivity.close();
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
         });
 
         Scene scene = new Scene(grid, 400, 400);
